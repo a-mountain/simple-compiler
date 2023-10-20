@@ -24,7 +24,7 @@ public class Frontend {
         record Comma(int index) implements Frontend.Token {
         }
 
-        record Operation(String value, int index) implements Frontend.Token {
+        record Operator(String value, int index) implements Frontend.Token {
         }
 
         record Number(String value, int index) implements Frontend.Token {
@@ -61,7 +61,7 @@ public class Frontend {
                         if (token instanceof Token.Number || token instanceof Token.Identifier || token instanceof Token.OpenBracket) {
                             break;
                         }
-                        if (token instanceof Token.Operation op) {
+                        if (token instanceof Token.Operator op) {
                             if (Objects.equals(op.value, "-") || Objects.equals(op.value, "+")) {
                                 break;
                             }
@@ -72,7 +72,7 @@ public class Frontend {
                         if (token instanceof Token.Number || token instanceof Token.Identifier) {
                             break;
                         }
-                        if (token instanceof Token.Operation op) {
+                        if (token instanceof Token.Operator op) {
                             if (Objects.equals(op.value, "-") || Objects.equals(op.value, "+")) {
                                 break;
                             }
@@ -83,7 +83,7 @@ public class Frontend {
                         if (token instanceof Token.EndExpression) {
                             break;
                         }
-                        if (token instanceof Token.Operation op) {
+                        if (token instanceof Token.Operator op) {
                             if (List.of("+", "-", "*", "/").contains(op.value())) {
                                 break;
                             }
@@ -91,18 +91,18 @@ public class Frontend {
                         errors.add("Invalid token '%s' after '%s' at index '%s'".formatted(token.getClass().getSimpleName(), state.getClass().getSimpleName(), token.index()));
                     }
                     case Token.Number _ -> {
-                        if (token instanceof Token.Operation || token instanceof Token.ClosedBracket || token instanceof Token.EndExpression) {
+                        if (token instanceof Token.Operator || token instanceof Token.ClosedBracket || token instanceof Token.EndExpression) {
                             break;
                         }
                         errors.add("Invalid token '%s' after '%s' at index '%s'".formatted(token.getClass().getSimpleName(), state.getClass().getSimpleName(), token.index()));
                     }
                     case Token.Identifier _ -> {
-                        if (token instanceof Token.Operation || token instanceof Token.ClosedBracket || token instanceof Token.EndExpression) {
+                        if (token instanceof Token.Operator || token instanceof Token.ClosedBracket || token instanceof Token.EndExpression) {
                             break;
                         }
                         errors.add("Invalid token '%s' after '%s' at index '%s'".formatted(token.getClass().getSimpleName(), state.getClass().getSimpleName(), token.index()));
                     }
-                    case Token.Operation _ -> {
+                    case Token.Operator _ -> {
                         if (token instanceof Token.Number || token instanceof Token.Identifier || token instanceof Token.OpenBracket) {
                             break;
                         }
@@ -141,7 +141,7 @@ public class Frontend {
                     continue;
                 }
                 if (OPERATION.contains(currentChar)) {
-                    tokens.add(new Token.Operation(String.valueOf(currentChar), i));
+                    tokens.add(new Token.Operator(String.valueOf(currentChar), i));
                     i++;
                     continue;
                 }
