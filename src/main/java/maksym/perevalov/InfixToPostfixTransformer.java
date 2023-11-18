@@ -15,40 +15,61 @@ public class InfixToPostfixTransformer {
           "+", 1,
           "/", 2,
           "*", 2,
-          "sin", 3,
-          "cos", 3,
           "^", 4,
           "(", IGNORE,
           ")", IGNORE
     );
-    private static final List<String> FUNCTIONS = List.of("sin", "cos");
+    private static final List<String> FUNCTIONS = List.of("sin", "cos", "pow", "sqrt", "min", "max");
 
-    private final List<Token> postfix = new ArrayList<>();
-    private final Deque<Token> operations = new ArrayDeque<>();
+    private final List<String> postfix = new ArrayList<>();
+    private final Deque<Operator> operations = new ArrayDeque<>();
+    private boolean insideFunction = false;
+    private int bonus = 0;
+    private int counter = 0;
 
-    public List<Token> transform(List<Token> tokens) {
+    public List<String> transform(List<Token> tokens) {
         for (Token token : tokens) {
-
             if (isNumber(token) || isVariable(token)) {
                 addToPostfixExpression(token);
                 continue;
+            }
+
+            if (insideFunction && isOpenBracket(token)) {
+                counter++;
+                bonus += 10;
+            }
+
+            if (insideFunction && isClosedBracket(token)) {
+                counter--;
+                bonus -= 10;
+
+                if (counter == 0) {
+                    insideFunction = false;
+                }
+            }
+
+            if (token.type().equals(Tokenizer.TokenType.Comma) && !isBracket(operations.peek())) {
+                addToPostfixExpression(takeSavedLatestOperator());
             }
 
             if (isOperator(token) || isFunction(token)) {
                 while (latestSavedOperatorHasHigherPrecedence(token)) {
                     addToPostfixExpression(takeSavedLatestOperator());
                 }
-                saveOperator(token);
+                saveOperator(new Operator(token.value(), getPrecedence(token)));
+                if (isFunction(token)) {
+                    insideFunction = true;
+                }
                 continue;
             }
 
-            if (token.value().equals("(")) {
-                saveOperator(token);
+            if (isOpenBracket(token)) {
+                saveOperator(new Operator(token.value(), 0));
                 continue;
             }
 
-            if (token.value().equals(")")) {
-                while (latestSavedOperatorIsOpenBracket()) {
+            if (isClosedBracket(token)) {
+                while (latestSavedOperatorIsNotOpenBracket()) {
                     addToPostfixExpression(takeSavedLatestOperator());
                 }
                 takeSavedLatestOperator();
@@ -63,24 +84,55 @@ public class InfixToPostfixTransformer {
         return postfix;
     }
 
-    private Token takeSavedLatestOperator() {
+    private boolean isBracket(Operator token) {
+        return isClosedBracket(token) || isOpenBracket(token);
+    }
+
+
+    private int getPrecedence(Token token) {
+        if (isFunction(token)) return 3 + bonus;
+        return PRECEDENCE.get(token.value()) + bonus;
+    }
+
+    private boolean isClosedBracket(Token token) {
+        return token.value().equals(")");
+    }
+
+    private boolean isClosedBracket(Operator token) {
+        return token.value().equals(")");
+    }
+
+
+    private boolean isOpenBracket(Token token) {
+        return token.value().equals("(");
+    }
+
+    private boolean isOpenBracket(Operator token) {
+        return token.value().equals("(");
+    }
+
+    private Operator takeSavedLatestOperator() {
         return operations.pop();
     }
 
-    private boolean latestSavedOperatorIsOpenBracket() {
-        return !operations.isEmpty() && !operations.peek().value().equals("(");
+    private boolean latestSavedOperatorIsNotOpenBracket() {
+        return !operations.isEmpty() && !isOpenBracket(operations.peek());
     }
 
-    private void saveOperator(Token token) {
+    private void saveOperator(Operator token) {
         operations.push(token);
     }
 
     private boolean latestSavedOperatorHasHigherPrecedence(Token token) {
-        return !operations.isEmpty() && PRECEDENCE.get(operations.peek().value()) > PRECEDENCE.get(token.value());
+        return !operations.isEmpty() && operations.peek().precedence() >= getPrecedence(token);
     }
 
     private void addToPostfixExpression(Token token) {
-        postfix.add(token);
+        postfix.add(token.value());
+    }
+
+    private void addToPostfixExpression(Operator operator) {
+        postfix.add(operator.value());
     }
 
     private boolean isOperator(Token token) {
@@ -98,4 +150,8 @@ public class InfixToPostfixTransformer {
     private boolean isFunction(Token token) {
         return token.type().equals(Tokenizer.TokenType.Identifier) && FUNCTIONS.contains(token.value());
     }
+
+    record Operator(String value, int precedence) {
+    }
+
 }
