@@ -10,26 +10,29 @@ public class Tokenizer {
           TokenType.Number.pattern, TokenType.Identifier.pattern, TokenType.Comma.pattern,
           TokenType.ClosedBracket.pattern, TokenType.OpenBracket.pattern, TokenType.Operator.pattern
     );
+    private static final String NO_REGEXP = "";
 
-    public List<Token> tokenize(String input) {
-        var tokens = new ArrayList<Token>();
+    public List<RowToken> tokenize(String input) {
+        var tokens = new ArrayList<>(List.of(RowToken.startToken()));
         Pattern pattern = Pattern.compile(PATTERN);
         Matcher matcher = pattern.matcher(input);
+        int position = 0;
 
         while (matcher.find()) {
-            var position = matcher.start();
+            position = matcher.start() + 1;
             var value = matcher.group();
             var type = getType(value);
             if (type == null)
                 throw new RuntimeException("Unexpected token, value='%s', position=%s".formatted(value, position));
-            tokens.add(new Token(value, position, type));
+            tokens.add(new RowToken(value, position, type));
         }
 
+        tokens.add(RowToken.endToken(position + 1));
         return tokens;
     }
 
     private Tokenizer.TokenType getType(String value) {
-        if (value.matches("\\d+(\\.\\d+)?")) {
+        if (value.matches(TokenType.Number.pattern)) {
             return TokenType.Number;
         } else if (value.matches(TokenType.Identifier.pattern)) {
             return TokenType.Identifier;
@@ -46,20 +49,30 @@ public class Tokenizer {
     }
 
     public enum TokenType {
+        Start(NO_REGEXP),
+        End(NO_REGEXP),
         Number("\\d+(\\.\\d+)?"),
-        Identifier("[a-zA-Z][a-zA-Z0-9]*"),
+        Identifier("[^+\\-*/^(),\\d\\s]+"),
         Operator("[+\\-*/^]"),
-        Comma(","),
         OpenBracket("\\("),
-        ClosedBracket("\\)");
+        ClosedBracket("\\)"),
+        Comma(",");
 
         public final String pattern;
 
         TokenType(String regexp) {
             this.pattern = regexp;
         }
+
     }
 
-    public record Token(String value, int position, TokenType type) {
+    public record RowToken(String value, int position, TokenType type) {
+        public static RowToken startToken() {
+            return new RowToken("", 0, TokenType.Start);
+        }
+
+        public static RowToken endToken(int position) {
+            return new RowToken("", position, TokenType.End);
+        }
     }
 }
