@@ -1,12 +1,12 @@
-package maksym.perevalov;
+package maksym.perevalov.parser;
 
-import static maksym.perevalov.Tokenizer.TokenType.*;
+import static maksym.perevalov.parser.Tokenizer.TokenType.*;
 
 import java.util.List;
 import java.util.Map;
 
-import maksym.perevalov.Tokenizer.RowToken;
-import maksym.perevalov.Tokenizer.TokenType;
+import maksym.perevalov.parser.Tokenizer.RowToken;
+import maksym.perevalov.parser.Tokenizer.TokenType;
 
 public class PositionValidator {
     private static final Map<TokenType, List<TokenType>> ALLOWED_NEIGHBORS = Map.ofEntries(
@@ -19,12 +19,16 @@ public class PositionValidator {
           Map.entry(ClosedBracket, List.of(Operator, ClosedBracket, Comma, End)),
           Map.entry(Comma, List.of(OpenBracket, Number, Variable, Function))
     );
+    private final ErrorCollector errorCollector;
 
-    public MathError validate(RowToken current, RowToken next) {
+    public PositionValidator(ErrorCollector errorCollector) {
+        this.errorCollector = errorCollector;
+    }
+
+    public void validate(RowToken current, RowToken next) {
         var allowedNextTokens = ALLOWED_NEIGHBORS.get(current.type());
         if (!allowedNextTokens.contains(next.type())) {
-            return MathError.formatted("Token '%s' at position '%s' cannot be next to '%s'", current.value(), current.position(), next.value());
+            errorCollector.add(new SyntaxError.IncorrectTokenPositionError(current, next));
         }
-        return null;
     }
 }

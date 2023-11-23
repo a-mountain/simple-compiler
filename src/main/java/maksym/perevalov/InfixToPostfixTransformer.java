@@ -6,7 +6,8 @@ import java.util.Deque;
 import java.util.List;
 import java.util.Map;
 
-import maksym.perevalov.Tokenizer.RowToken;
+import maksym.perevalov.parser.Tokenizer;
+import maksym.perevalov.parser.Tokenizer.RowToken;
 
 public class InfixToPostfixTransformer {
     private static final int IGNORE = 0;

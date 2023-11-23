@@ -2,6 +2,9 @@ package maksym.perevalov;
 
 import java.util.List;
 
+import maksym.perevalov.parser.ErrorCollector;
+import maksym.perevalov.parser.Tokenizer;
+
 public class Frontend {
 
     /**
@@ -11,7 +14,8 @@ public class Frontend {
     public static void main(String[] args) {
         String test = "4 + pow(5+6, pow(3 / 2, 6 + 4))";
 //        String test = "5+6 + 1-3";
-        var tokenizer = new Tokenizer(new MathContext(List.of("pow")));
+        var errorCollector = new ErrorCollector();
+        var tokenizer = new Tokenizer(new MathContext(List.of("pow")), errorCollector);
         var parser = new InfixToPostfixTransformer();
         var tokens = tokenizer.tokenize(test);
         var result = parser.transform(tokens);

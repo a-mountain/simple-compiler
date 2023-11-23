@@ -1,9 +1,12 @@
-package maksym.perevalov;
+package maksym.perevalov.parser;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import maksym.perevalov.MathContext;
+import maksym.perevalov.parser.SyntaxError.UnknownTokenError;
 
 public class Tokenizer {
     private static final String PATTERN = "(%s)|(%s)|(%s)|(%s)|(%s)|(%s)".formatted(
@@ -13,9 +16,11 @@ public class Tokenizer {
     private static final String NO_REGEXP = "";
 
     private final MathContext mathContext;
+    private final ErrorCollector errorCollector;
 
-    public Tokenizer(MathContext mathContext) {
+    public Tokenizer(MathContext mathContext, ErrorCollector errorCollector) {
         this.mathContext = mathContext;
+        this.errorCollector = errorCollector;
     }
 
     public List<RowToken> tokenize(String input) {
@@ -28,9 +33,11 @@ public class Tokenizer {
             position = matcher.start() + 1;
             var value = matcher.group();
             var type = getType(value);
-            if (type == null)
-                throw new RuntimeException("Unexpected token, value='%s', position=%s".formatted(value, position));
-            tokens.add(new RowToken(value, position, type));
+            if (type == null) {
+                errorCollector.add(new UnknownTokenError(value, position));
+            } else {
+                tokens.add(new RowToken(value, position, type));
+            }
         }
 
         tokens.add(RowToken.endToken(position + 1));

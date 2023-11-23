@@ -6,8 +6,10 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
-import maksym.perevalov.Tokenizer.RowToken;
-import maksym.perevalov.Tokenizer.TokenType;
+import maksym.perevalov.parser.ErrorCollector;
+import maksym.perevalov.parser.Tokenizer;
+import maksym.perevalov.parser.Tokenizer.RowToken;
+import maksym.perevalov.parser.Tokenizer.TokenType;
 
 class TokenizerTest {
 
@@ -36,7 +38,7 @@ class TokenizerTest {
     }
 
     private static Tokenizer tokenizer() {
-        return new Tokenizer(new MathContext(List.of("min")));
+        return new Tokenizer(new MathContext(List.of("min")), new ErrorCollector());
     }
 
     @Test

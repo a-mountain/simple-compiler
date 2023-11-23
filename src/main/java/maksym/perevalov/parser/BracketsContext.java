@@ -1,16 +1,20 @@
-package maksym.perevalov;
+package maksym.perevalov.parser;
 
 import java.util.ArrayDeque;
-import java.util.ArrayList;
 import java.util.Deque;
-import java.util.List;
 
-import maksym.perevalov.Tokenizer.RowToken;
+import maksym.perevalov.parser.SyntaxError.NoClosedBracketError;
+import maksym.perevalov.parser.SyntaxError.NoOpenBracketError;
+import maksym.perevalov.parser.Tokenizer.RowToken;
 
 public class BracketsContext {
     private final Deque<Bracket> stack = new ArrayDeque<>();
-    private final List<SyntaxError> errors = new ArrayList<>();
+    private final ErrorCollector errorCollector;
     private int functionNestedLevel = 0;
+
+    public BracketsContext(ErrorCollector errorCollector) {
+        this.errorCollector = errorCollector;
+    }
 
     public boolean insideFunction() {
         return functionNestedLevel > 0;
@@ -27,7 +31,7 @@ public class BracketsContext {
 
     public BracketType addClosedBracket(RowToken token) {
         if (stack.isEmpty()) {
-            errors.add(new MathError("No open bracket for ')' at position '%s'".formatted(token.position())));
+            errorCollector.add(new NoOpenBracketError(token.position()));
             return BracketType.PrecedenceBracket;
         }
         var bracket = stack.pop();
@@ -35,12 +39,11 @@ public class BracketsContext {
         return bracket.type();
     }
 
-    public List<SyntaxError> collectErrors() {
+    public void collectErrors() {
         var noClosedBrackets = stack.stream()
-              .map(bracket -> MathError.formatted("No closed bracket for '(' at position '$s'", bracket.position()))
+              .map(bracket -> new NoClosedBracketError(bracket.position()))
               .toList();
-        errors.addAll(noClosedBrackets);
-        return errors;
+        errorCollector.addAll(noClosedBrackets);
     }
 
     private record Bracket(BracketType type, int position) {

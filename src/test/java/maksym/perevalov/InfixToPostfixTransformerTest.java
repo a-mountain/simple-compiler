@@ -8,6 +8,9 @@ import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
 
+import maksym.perevalov.parser.ErrorCollector;
+import maksym.perevalov.parser.Tokenizer;
+
 class InfixToPostfixTransformerTest {
 
     @Test
@@ -120,6 +123,6 @@ class InfixToPostfixTransformerTest {
     }
 
     List<Tokenizer.RowToken> expression(String expression) {
-        return new Tokenizer(new MathContext(List.of("sin", "cos", "pow", "sqrt", "min", "max"))).tokenize(expression);
+        return new Tokenizer(new MathContext(List.of("sin", "cos", "pow", "sqrt", "min", "max")), new ErrorCollector()).tokenize(expression);
     }
 }

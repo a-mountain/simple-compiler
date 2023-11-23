@@ -1,34 +1,37 @@
-package maksym.perevalov;
+package maksym.perevalov.parser;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import maksym.perevalov.BracketsContext.BracketType;
-import maksym.perevalov.Tokenizer.RowToken;
-import maksym.perevalov.Tokenizer.TokenType;
+import maksym.perevalov.parser.BracketsContext.BracketType;
+import maksym.perevalov.parser.SyntaxError.CommaError;
+import maksym.perevalov.parser.SyntaxError.IncorrectIdentifierNameError;
+import maksym.perevalov.parser.Tokenizer.RowToken;
+import maksym.perevalov.parser.Tokenizer.TokenType;
 
-public class SyntaxValidator {
+public class SyntaxParser {
     private final List<RowToken> rowTokens;
     private final List<SyntaxToken> syntaxTokens = new ArrayList<>();
-    private final List<SyntaxError> errors = new ArrayList<>();
+    private final ErrorCollector errorCollector;
     private final BracketsContext bracketsContext;
-    private final PositionValidator positionValidator = new PositionValidator();
+    private final PositionValidator positionValidator;
     private int nextIndex = 0;
 
-    public SyntaxValidator(List<RowToken> tokens, BracketsContext bracketsContext) {
+    public SyntaxParser(List<RowToken> tokens, BracketsContext bracketsContext, ErrorCollector errorCollector) {
         this.rowTokens = tokens;
         this.bracketsContext = bracketsContext;
+        this.errorCollector = errorCollector;
+        this.positionValidator = new PositionValidator(errorCollector);
     }
 
-    public Result analyze() {
+    public List<SyntaxToken> analyze() {
         for (int i = 1; i < rowTokens.size(); i++) {
             this.nextIndex = i;
             RowToken currentToken = rowTokens.get(i - 1);
             RowToken next = rowTokens.get(i);
 
-            var error = positionValidator.validate(currentToken, next);
-            if (error != null) errors.add(error);
+            positionValidator.validate(currentToken, next);
 
             transformToSyntaxTokenIfPossible(currentToken);
 
@@ -41,16 +44,16 @@ public class SyntaxValidator {
             }
 
             if (currentToken.is(TokenType.Variable) && isIncorrectName(currentToken)) {
-                errors.add(new GeneralError("Identifier '%s' contains incorrect symbols".formatted(currentToken.value())));
+                errorCollector.add(new IncorrectIdentifierNameError(currentToken));
             }
 
-            if (currentToken.is(TokenType.Comma) && bracketsContext.insideFunction()) {
-                errors.add(MathError.formatted("Comma is not inside function parameters at position '%s'", currentToken.position()));
+            if (currentToken.is(TokenType.Comma) && !bracketsContext.insideFunction()) {
+                errorCollector.add(new CommaError(currentToken));
             }
         }
 
-        errors.addAll(bracketsContext.collectErrors());
-        return new Result(syntaxTokens, errors);
+        bracketsContext.collectErrors();
+        return syntaxTokens;
     }
 
     private static boolean isIncorrectName(RowToken currentToken) {
@@ -124,20 +127,5 @@ public class SyntaxValidator {
     }
 
     public record SyntaxToken(String value, int position, LexemeType type) {
-    }
-
-    public record Result(List<SyntaxToken> tokens, List<SyntaxError> errors) {
-
-        public boolean isOk() {
-            return errors.isEmpty();
-        }
-
-        public boolean isError() {
-            return !errors.isEmpty();
-        }
-
-    }
-
-    public record GeneralError(String message) implements SyntaxError {
     }
 }
