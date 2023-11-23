@@ -6,7 +6,7 @@ import java.util.Deque;
 import java.util.List;
 import java.util.Map;
 
-import maksym.perevalov.Tokenizer.Token;
+import maksym.perevalov.Tokenizer.RowToken;
 
 public class InfixToPostfixTransformer {
     private static final int IGNORE = 0;
@@ -27,8 +27,8 @@ public class InfixToPostfixTransformer {
     private int bonus = 0;
     private int counter = 0;
 
-    public List<String> transform(List<Token> tokens) {
-        for (Token token : tokens) {
+    public List<String> transform(List<RowToken> tokens) {
+        for (RowToken token : tokens) {
             if (isNumber(token) || isVariable(token)) {
                 addToPostfixExpression(token);
                 continue;
@@ -89,12 +89,12 @@ public class InfixToPostfixTransformer {
     }
 
 
-    private int getPrecedence(Token token) {
+    private int getPrecedence(RowToken token) {
         if (isFunction(token)) return 3 + bonus;
         return PRECEDENCE.get(token.value()) + bonus;
     }
 
-    private boolean isClosedBracket(Token token) {
+    private boolean isClosedBracket(RowToken token) {
         return token.value().equals(")");
     }
 
@@ -103,7 +103,7 @@ public class InfixToPostfixTransformer {
     }
 
 
-    private boolean isOpenBracket(Token token) {
+    private boolean isOpenBracket(RowToken token) {
         return token.value().equals("(");
     }
 
@@ -123,11 +123,11 @@ public class InfixToPostfixTransformer {
         operations.push(token);
     }
 
-    private boolean latestSavedOperatorHasHigherPrecedence(Token token) {
+    private boolean latestSavedOperatorHasHigherPrecedence(RowToken token) {
         return !operations.isEmpty() && operations.peek().precedence() >= getPrecedence(token);
     }
 
-    private void addToPostfixExpression(Token token) {
+    private void addToPostfixExpression(RowToken token) {
         postfix.add(token.value());
     }
 
@@ -135,20 +135,20 @@ public class InfixToPostfixTransformer {
         postfix.add(operator.value());
     }
 
-    private boolean isOperator(Token token) {
+    private boolean isOperator(RowToken token) {
         return token.type().equals(Tokenizer.TokenType.Operator);
     }
 
-    private boolean isNumber(Token token) {
+    private boolean isNumber(RowToken token) {
         return token.type().equals(Tokenizer.TokenType.Number);
     }
 
-    private boolean isVariable(Token token) {
-        return token.type().equals(Tokenizer.TokenType.Identifier) && !isFunction(token);
+    private boolean isVariable(RowToken token) {
+        return token.type().equals(Tokenizer.TokenType.Variable) && !isFunction(token);
     }
 
-    private boolean isFunction(Token token) {
-        return token.type().equals(Tokenizer.TokenType.Identifier) && FUNCTIONS.contains(token.value());
+    private boolean isFunction(RowToken token) {
+        return token.type().equals(Tokenizer.TokenType.Function) && FUNCTIONS.contains(token.value());
     }
 
     record Operator(String value, int precedence) {

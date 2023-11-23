@@ -119,7 +119,7 @@ class InfixToPostfixTransformerTest {
         return Arrays.stream(expected.split(" ")).collect(Collectors.toList());
     }
 
-    List<Tokenizer.Token> expression(String expression) {
-        return new Tokenizer().tokenize(expression);
+    List<Tokenizer.RowToken> expression(String expression) {
+        return new Tokenizer(new MathContext(List.of("sin", "cos", "pow", "sqrt", "min", "max"))).tokenize(expression);
     }
 }

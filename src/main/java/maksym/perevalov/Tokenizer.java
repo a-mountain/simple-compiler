@@ -7,10 +7,16 @@ import java.util.regex.Pattern;
 
 public class Tokenizer {
     private static final String PATTERN = "(%s)|(%s)|(%s)|(%s)|(%s)|(%s)".formatted(
-          TokenType.Number.pattern, TokenType.Identifier.pattern, TokenType.Comma.pattern,
+          TokenType.Number.pattern, TokenType.Variable.pattern, TokenType.Comma.pattern,
           TokenType.ClosedBracket.pattern, TokenType.OpenBracket.pattern, TokenType.Operator.pattern
     );
     private static final String NO_REGEXP = "";
+
+    private final MathContext mathContext;
+
+    public Tokenizer(MathContext mathContext) {
+        this.mathContext = mathContext;
+    }
 
     public List<RowToken> tokenize(String input) {
         var tokens = new ArrayList<>(List.of(RowToken.startToken()));
@@ -34,8 +40,12 @@ public class Tokenizer {
     private Tokenizer.TokenType getType(String value) {
         if (value.matches(TokenType.Number.pattern)) {
             return TokenType.Number;
-        } else if (value.matches(TokenType.Identifier.pattern)) {
-            return TokenType.Identifier;
+        } else if (value.matches(TokenType.Variable.pattern)) {
+            if (mathContext.isFunction(value)) {
+                return TokenType.Function;
+            } else {
+                return TokenType.Variable;
+            }
         } else if (value.matches(TokenType.Operator.pattern)) {
             return TokenType.Operator;
         } else if (value.equals(",")) {
@@ -52,7 +62,8 @@ public class Tokenizer {
         Start(NO_REGEXP),
         End(NO_REGEXP),
         Number("\\d+(\\.\\d+)?"),
-        Identifier("[^+\\-*/^(),\\d\\s]+"),
+        Variable("[^+\\-*/^(),\\d\\s]+"),
+        Function(NO_REGEXP),
         Operator("[+\\-*/^]"),
         OpenBracket("\\("),
         ClosedBracket("\\)"),
@@ -67,12 +78,17 @@ public class Tokenizer {
     }
 
     public record RowToken(String value, int position, TokenType type) {
+
+        public boolean is(TokenType type) {
+            return this.type.equals(type);
+        }
+
         public static RowToken startToken() {
-            return new RowToken("", 0, TokenType.Start);
+            return new RowToken("START", 0, TokenType.Start);
         }
 
         public static RowToken endToken(int position) {
-            return new RowToken("", position, TokenType.End);
+            return new RowToken("END", position, TokenType.End);
         }
     }
 }
