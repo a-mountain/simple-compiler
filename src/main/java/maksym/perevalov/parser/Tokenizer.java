@@ -6,7 +6,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import maksym.perevalov.MathContext;
-import maksym.perevalov.parser.SyntaxError.UnknownTokenError;
+import maksym.perevalov.parser.ParserError.UnknownTokenError;
 
 public class Tokenizer {
     private static final String PATTERN = "(%s)|(%s)|(%s)|(%s)|(%s)|(%s)".formatted(

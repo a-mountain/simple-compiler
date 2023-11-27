@@ -3,8 +3,8 @@ package maksym.perevalov.parser;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
-import maksym.perevalov.parser.SyntaxError.NoClosedBracketError;
-import maksym.perevalov.parser.SyntaxError.NoOpenBracketError;
+import maksym.perevalov.parser.ParserError.NoClosedBracketError;
+import maksym.perevalov.parser.ParserError.NoOpenBracketError;
 import maksym.perevalov.parser.Tokenizer.RowToken;
 
 public class BracketsContext {
@@ -16,7 +16,7 @@ public class BracketsContext {
         this.errorCollector = errorCollector;
     }
 
-    public boolean insideFunction() {
+    public boolean insideFunctionParams() {
         return functionNestedLevel > 0;
     }
 

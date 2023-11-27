@@ -5,8 +5,8 @@ import java.util.List;
 import java.util.Map;
 
 import maksym.perevalov.parser.BracketsContext.BracketType;
-import maksym.perevalov.parser.SyntaxError.CommaError;
-import maksym.perevalov.parser.SyntaxError.IncorrectIdentifierNameError;
+import maksym.perevalov.parser.ParserError.CommaError;
+import maksym.perevalov.parser.ParserError.IncorrectIdentifierNameError;
 import maksym.perevalov.parser.Tokenizer.RowToken;
 import maksym.perevalov.parser.Tokenizer.TokenType;
 
@@ -19,13 +19,13 @@ public class SyntaxParser {
     private int nextIndex = 0;
 
     public SyntaxParser(List<RowToken> tokens, BracketsContext bracketsContext, ErrorCollector errorCollector) {
-        this.rowTokens = tokens;
+        this.rowTokens = new UnaryMinusResolver(tokens).resolve();
         this.bracketsContext = bracketsContext;
         this.errorCollector = errorCollector;
         this.positionValidator = new PositionValidator(errorCollector);
     }
 
-    public List<SyntaxToken> analyze() {
+    public List<SyntaxToken> parse() {
         for (int i = 1; i < rowTokens.size(); i++) {
             this.nextIndex = i;
             RowToken currentToken = rowTokens.get(i - 1);
@@ -47,10 +47,12 @@ public class SyntaxParser {
                 errorCollector.add(new IncorrectIdentifierNameError(currentToken));
             }
 
-            if (currentToken.is(TokenType.Comma) && !bracketsContext.insideFunction()) {
+            if (currentToken.is(TokenType.Comma) && !bracketsContext.insideFunctionParams()) {
                 errorCollector.add(new CommaError(currentToken));
             }
         }
+
+        syntaxTokens.add(new SyntaxToken("END", rowTokens.size() + 1, SyntaxTokenType.End));
 
         bracketsContext.collectErrors();
         return syntaxTokens;
@@ -61,7 +63,7 @@ public class SyntaxParser {
     }
 
     private void transformToSyntaxTokenIfPossible(RowToken currentToken) {
-        var lexemeType = LexemeType.of(currentToken.type());
+        var lexemeType = SyntaxTokenType.of(currentToken.type());
         if (lexemeType != null) {
             addSyntaxToken(currentToken, lexemeType);
         }
@@ -70,9 +72,9 @@ public class SyntaxParser {
     private void processClosedBracket(RowToken curr) {
         var bracketType = bracketsContext.addClosedBracket(curr);
         if (bracketType.equals(BracketType.FunctionBracket)) {
-            addSyntaxToken(curr, LexemeType.ClosedFunctionBracket);
+            addSyntaxToken(curr, SyntaxTokenType.ClosedFunctionBracket);
         } else {
-            addSyntaxToken(curr, LexemeType.ClosedBracket);
+            addSyntaxToken(curr, SyntaxTokenType.ClosedPrecedenceBracket);
         }
     }
 
@@ -80,14 +82,14 @@ public class SyntaxParser {
         RowToken token = prev();
         if (prev() != null && token.is(TokenType.Function)) {
             bracketsContext.addOpenFunctionBracket(curr);
-            addSyntaxToken(curr, LexemeType.OpenFunctionBracket);
+            addSyntaxToken(curr, SyntaxTokenType.OpenFunctionBracket);
         } else {
             bracketsContext.addOpenPrecedenceBracket(curr);
-            addSyntaxToken(curr, LexemeType.OpenBracket);
+            addSyntaxToken(curr, SyntaxTokenType.OpenPrecedenceBracket);
         }
     }
 
-    public RowToken prev() {
+    private RowToken prev() {
         try {
             return rowTokens.get(nextIndex - 2);
         } catch (IndexOutOfBoundsException e) {
@@ -95,11 +97,11 @@ public class SyntaxParser {
         }
     }
 
-    private void addSyntaxToken(RowToken token, LexemeType type) {
+    private void addSyntaxToken(RowToken token, SyntaxTokenType type) {
         syntaxTokens.add(new SyntaxToken(token.value(), token.position(), type));
     }
 
-    public enum LexemeType {
+    public enum SyntaxTokenType {
         Start,
         End,
         Variable,
@@ -109,23 +111,23 @@ public class SyntaxParser {
         Number,
         Operator,
         Comma,
-        OpenBracket,
-        ClosedBracket;
+        OpenPrecedenceBracket,
+        ClosedPrecedenceBracket;
 
-        private static final Map<TokenType, LexemeType> ONE_TO_ONE_MAPPING = Map.ofEntries(
-              Map.entry(TokenType.Start, LexemeType.Start),
-              Map.entry(TokenType.End, LexemeType.End),
-              Map.entry(TokenType.Number, LexemeType.Number),
-              Map.entry(TokenType.Variable, LexemeType.Variable),
-              Map.entry(TokenType.Function, LexemeType.Function),
-              Map.entry(TokenType.Operator, LexemeType.Operator),
-              Map.entry(TokenType.Comma, LexemeType.Comma));
+        private static final Map<TokenType, SyntaxTokenType> ONE_TO_ONE_MAPPING = Map.ofEntries(
+              Map.entry(TokenType.Start, SyntaxTokenType.Start),
+              Map.entry(TokenType.End, SyntaxTokenType.End),
+              Map.entry(TokenType.Number, SyntaxTokenType.Number),
+              Map.entry(TokenType.Variable, SyntaxTokenType.Variable),
+              Map.entry(TokenType.Function, SyntaxTokenType.Function),
+              Map.entry(TokenType.Operator, SyntaxTokenType.Operator),
+              Map.entry(TokenType.Comma, SyntaxTokenType.Comma));
 
-        public static LexemeType of(TokenType type) {
+        public static SyntaxTokenType of(TokenType type) {
             return ONE_TO_ONE_MAPPING.get(type);
         }
     }
 
-    public record SyntaxToken(String value, int position, LexemeType type) {
+    public record SyntaxToken(String value, int position, SyntaxTokenType type) {
     }
 }

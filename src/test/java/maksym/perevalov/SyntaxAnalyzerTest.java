@@ -101,6 +101,13 @@ class SyntaxAnalyzerTest {
             analyze(syntaxAnalyzer);
             assertTrue(hasErrors());
         }
+
+        @Test
+        void shouldDetectCommaOutsideFunction() {
+            var syntaxAnalyzer = analyzer("1 + (1,2)");
+            analyze(syntaxAnalyzer);
+            assertTrue(hasErrors());
+        }
     }
 
     private boolean hasErrors() {
@@ -112,7 +119,7 @@ class SyntaxAnalyzerTest {
     }
 
     void analyze(SyntaxParser syntaxAnalyzer) {
-        syntaxAnalyzer.analyze();
+        syntaxAnalyzer.parse();
     }
 
     SyntaxParser analyzer(String expression) {

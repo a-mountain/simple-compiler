@@ -14,7 +14,7 @@ public class PositionValidator {
           Map.entry(Number, List.of(Operator, Comma, ClosedBracket, End)),
           Map.entry(Variable, List.of(Operator, Comma, ClosedBracket, End)),
           Map.entry(Function, List.of(Operator, Comma, OpenBracket, End)),
-          Map.entry(Operator, List.of(OpenBracket, Variable, Number)),
+          Map.entry(Operator, List.of(OpenBracket, Variable, Number, Function)),
           Map.entry(OpenBracket, List.of(OpenBracket, Variable, Function, Number)),
           Map.entry(ClosedBracket, List.of(Operator, ClosedBracket, Comma, End)),
           Map.entry(Comma, List.of(OpenBracket, Number, Variable, Function))
@@ -28,7 +28,7 @@ public class PositionValidator {
     public void validate(RowToken current, RowToken next) {
         var allowedNextTokens = ALLOWED_NEIGHBORS.get(current.type());
         if (!allowedNextTokens.contains(next.type())) {
-            errorCollector.add(new SyntaxError.IncorrectTokenPositionError(current, next));
+            errorCollector.add(new ParserError.IncorrectTokenPositionError(current, next));
         }
     }
 }
