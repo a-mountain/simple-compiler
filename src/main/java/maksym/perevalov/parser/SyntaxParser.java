@@ -137,5 +137,8 @@ public class SyntaxParser {
     }
 
     public record SyntaxToken(String value, int position, SyntaxTokenType type) {
+        public boolean is(SyntaxTokenType type) {
+            return this.type.equals(type);
+        }
     }
 }

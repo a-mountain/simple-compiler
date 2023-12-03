@@ -1,66 +1,54 @@
 package maksym.perevalov;
 
+import static maksym.perevalov.parser.SyntaxParser.*;
+
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 import java.util.Map;
 
-import maksym.perevalov.parser.Tokenizer;
-import maksym.perevalov.parser.Tokenizer.RowToken;
+import maksym.perevalov.parser.SyntaxParser.SyntaxToken;
 
 public class InfixToPostfixTransformer {
-    private static final int IGNORE = 0;
     private static final Map<String, Integer> PRECEDENCE = Map.of(
           "-", 1,
           "+", 1,
           "/", 2,
           "*", 2,
           "^", 4,
-          "(", IGNORE,
-          ")", IGNORE
+          "(", 0,
+          ")", 0
     );
-    private static final List<String> FUNCTIONS = List.of("sin", "cos", "pow", "sqrt", "min", "max");
 
-    private final List<String> postfix = new ArrayList<>();
+    private final List<PostfixElement> postfix = new ArrayList<>();
     private final Deque<Operator> operations = new ArrayDeque<>();
-    private boolean insideFunction = false;
     private int bonus = 0;
-    private int counter = 0;
 
-    public List<String> transform(List<RowToken> tokens) {
-        for (RowToken token : tokens) {
-            if (isNumber(token) || isVariable(token)) {
+    public List<PostfixElement> transform(List<SyntaxToken> tokens) {
+        for (var token : tokens) {
+            if (token.is(SyntaxTokenType.Number) || token.is(SyntaxTokenType.Variable)) {
                 addToPostfixExpression(token);
                 continue;
             }
 
-            if (insideFunction && isOpenBracket(token)) {
-                counter++;
+            if (token.is(SyntaxTokenType.OpenFunctionBracket)) {
                 bonus += 10;
             }
 
-            if (insideFunction && isClosedBracket(token)) {
-                counter--;
+            if (token.is(SyntaxTokenType.ClosedFunctionBracket)) {
                 bonus -= 10;
-
-                if (counter == 0) {
-                    insideFunction = false;
-                }
             }
 
-            if (token.type().equals(Tokenizer.TokenType.Comma) && !isBracket(operations.peek())) {
+            if (token.is(SyntaxTokenType.Comma) && !operations.peek().isBracket()) {
                 addToPostfixExpression(takeSavedLatestOperator());
             }
 
-            if (isOperator(token) || isFunction(token)) {
+            if (token.is(SyntaxTokenType.Operator) || token.is(SyntaxTokenType.Function)) {
                 while (latestSavedOperatorHasHigherPrecedence(token)) {
                     addToPostfixExpression(takeSavedLatestOperator());
                 }
                 saveOperator(new Operator(token.value(), getPrecedence(token)));
-                if (isFunction(token)) {
-                    insideFunction = true;
-                }
                 continue;
             }
 
@@ -85,26 +73,20 @@ public class InfixToPostfixTransformer {
         return postfix;
     }
 
-    private boolean isBracket(Operator token) {
-        return isClosedBracket(token) || isOpenBracket(token);
+    private PostfixElement toPostfix(String string) {
+        return null;
     }
 
-
-    private int getPrecedence(RowToken token) {
-        if (isFunction(token)) return 3 + bonus;
+    private int getPrecedence(SyntaxToken token) {
+        if (token.is(SyntaxTokenType.Function)) return 3 + bonus;
         return PRECEDENCE.get(token.value()) + bonus;
     }
 
-    private boolean isClosedBracket(RowToken token) {
+    private boolean isClosedBracket(SyntaxToken token) {
         return token.value().equals(")");
     }
 
-    private boolean isClosedBracket(Operator token) {
-        return token.value().equals(")");
-    }
-
-
-    private boolean isOpenBracket(RowToken token) {
+    private boolean isOpenBracket(SyntaxToken token) {
         return token.value().equals("(");
     }
 
@@ -124,35 +106,59 @@ public class InfixToPostfixTransformer {
         operations.push(token);
     }
 
-    private boolean latestSavedOperatorHasHigherPrecedence(RowToken token) {
+    private boolean latestSavedOperatorHasHigherPrecedence(SyntaxToken token) {
         return !operations.isEmpty() && operations.peek().precedence() >= getPrecedence(token);
     }
 
-    private void addToPostfixExpression(RowToken token) {
-        postfix.add(token.value());
+    private void addToPostfixExpression(SyntaxToken token) {
+        if (token.is(SyntaxTokenType.Function)) {
+            postfix.add(new PostfixElement.Function(token.value()));
+        } else if (token.is(SyntaxTokenType.Number)) {
+            postfix.add(new PostfixElement.Number(token.value()));
+        } else if (token.is(SyntaxTokenType.Variable)) {
+            postfix.add(new PostfixElement.Variable(token.value()));
+        } else {
+            throw new RuntimeException("Unexpected token - " + token);
+        }
     }
 
     private void addToPostfixExpression(Operator operator) {
-        postfix.add(operator.value());
-    }
-
-    private boolean isOperator(RowToken token) {
-        return token.type().equals(Tokenizer.TokenType.Operator);
-    }
-
-    private boolean isNumber(RowToken token) {
-        return token.type().equals(Tokenizer.TokenType.Number);
-    }
-
-    private boolean isVariable(RowToken token) {
-        return token.type().equals(Tokenizer.TokenType.Variable) && !isFunction(token);
-    }
-
-    private boolean isFunction(RowToken token) {
-        return token.type().equals(Tokenizer.TokenType.Function) && FUNCTIONS.contains(token.value());
+        postfix.add(new PostfixElement.Operator(operator.value()));
     }
 
     record Operator(String value, int precedence) {
+        public boolean isBracket() {
+            return value.equals("(") || value.equals(")");
+        }
     }
 
+    public sealed interface PostfixElement {
+        record Operator(String value) implements PostfixElement {
+            @Override
+            public String toString() {
+                return value;
+            }
+        }
+
+        record Function(String value) implements PostfixElement {
+            @Override
+            public String toString() {
+                return value;
+            }
+        }
+
+        record Number(String value) implements PostfixElement {
+            @Override
+            public String toString() {
+                return value;
+            }
+        }
+
+        record Variable(String value) implements PostfixElement {
+            @Override
+            public String toString() {
+                return value;
+            }
+        }
+    }
 }

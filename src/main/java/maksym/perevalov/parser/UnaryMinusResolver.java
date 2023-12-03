@@ -27,7 +27,11 @@ public class UnaryMinusResolver {
             var currentToken = tokens.get(i - 1);
             var next = tokens.get(i);
 
-            if (isMinus(currentToken) && (isRightExpression(next) && isLeftNotExpression(prev))) {
+            if (isMinus(currentToken) && (next.is(TokenType.Number) && isLeftNotExpression(prev))) {
+                skipNext = true;
+                var newToken = new RowToken("-" + next.value(), currentToken.position(), next.type());
+                result.add(newToken);
+            } else if (isMinus(currentToken) && (isRightExpression(next) && isLeftNotExpression(prev))) {
                 skipNext = true;
                 var minus = new RowToken("-1", currentToken.position(), TokenType.Number);
                 var multiply = new RowToken("*", currentToken.position(), TokenType.Operator);
