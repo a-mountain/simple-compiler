@@ -1,5 +1,6 @@
 package maksym.perevalov;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
@@ -107,6 +108,34 @@ class SyntaxAnalyzerTest {
             var syntaxAnalyzer = analyzer("1 + (1,2)");
             analyze(syntaxAnalyzer);
             assertTrue(hasErrors());
+        }
+
+        @Test
+        void shouldDeleteEmptyBrackets() {
+            var syntaxAnalyzer = analyzer("()");
+            analyze(syntaxAnalyzer);
+            assertTrue(hasErrors());
+        }
+
+        @Test
+        void shouldAllowEmptyParamFunction() {
+            var syntaxAnalyzer = analyzer("sin()");
+            analyze(syntaxAnalyzer);
+            assertFalse(hasErrors());
+        }
+
+        @Test
+        void shouldDetectUnaryMinus() {
+            var syntaxAnalyzer = analyzer("-(5 + 1)");
+            analyze(syntaxAnalyzer);
+            assertFalse(hasErrors());
+        }
+
+        @Test
+        void shouldDetectMinusOperator() {
+            var syntaxAnalyzer = analyzer("(x+7)-(0-i)");
+            analyze(syntaxAnalyzer);
+            assertFalse(hasErrors());
         }
     }
 

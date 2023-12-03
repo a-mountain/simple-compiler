@@ -23,15 +23,17 @@ public class UnaryMinusResolver {
                 continue;
             }
             this.nextIndex = i;
-            RowToken currentToken = tokens.get(i - 1);
-            RowToken next = tokens.get(i);
+            var prev = prev();
+            var currentToken = tokens.get(i - 1);
+            var next = tokens.get(i);
 
-            if (isMinus(currentToken) && (isValue(next) && prevIsNotValue())) {
+            if (isMinus(currentToken) && (isRightExpression(next) && isLeftNotExpression(prev))) {
                 skipNext = true;
-                var newToken = new RowToken("-" + next.value(), currentToken.position(), next.type());
-                result.add(newToken);
+                var minus = new RowToken("-1", currentToken.position(), TokenType.Number);
+                var multiply = new RowToken("*", currentToken.position(), TokenType.Operator);
+                result.addAll(List.of(minus, multiply, next));
             } else {
-                result.add(currentToken);
+                result.add(new RowToken(currentToken.value(), currentToken.position(), currentToken.type()));
             }
         }
 
@@ -40,8 +42,8 @@ public class UnaryMinusResolver {
         return result;
     }
 
-    private boolean prevIsNotValue() {
-        return prev() == null || !isValue(prev());
+    private boolean isLeftNotExpression(RowToken token) {
+        return token == null || !List.of(TokenType.Number, TokenType.Variable, TokenType.ClosedBracket).contains(token.type());
     }
 
     private static boolean isMinus(RowToken currentToken) {
@@ -56,7 +58,7 @@ public class UnaryMinusResolver {
         }
     }
 
-    private boolean isValue(RowToken token) {
-        return token.is(TokenType.Number) || token.is(TokenType.Variable);
+    private boolean isRightExpression(RowToken token) {
+        return List.of(TokenType.Number, TokenType.Variable, TokenType.Function, TokenType.OpenBracket).contains(token.type());
     }
 }

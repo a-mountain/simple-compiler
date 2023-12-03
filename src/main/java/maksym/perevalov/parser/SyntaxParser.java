@@ -29,9 +29,6 @@ public class SyntaxParser {
         for (int i = 1; i < rowTokens.size(); i++) {
             this.nextIndex = i;
             RowToken currentToken = rowTokens.get(i - 1);
-            RowToken next = rowTokens.get(i);
-
-            positionValidator.validate(currentToken, next);
 
             transformToSyntaxTokenIfPossible(currentToken);
 
@@ -54,11 +51,18 @@ public class SyntaxParser {
 
         syntaxTokens.add(new SyntaxToken("END", rowTokens.size() + 1, SyntaxTokenType.End));
 
+        for (int i = 1; i < rowTokens.size(); i++) {
+            this.nextIndex = i;
+            SyntaxToken currentToken = syntaxTokens.get(i - 1);
+            SyntaxToken next = syntaxTokens.get(i);
+            positionValidator.validate(currentToken, next);
+        }
+
         bracketsContext.collectErrors();
         return syntaxTokens;
     }
 
-    private static boolean isIncorrectName(RowToken currentToken) {
+    private boolean isIncorrectName(RowToken currentToken) {
         return !currentToken.value().chars().allMatch(Character::isAlphabetic);
     }
 
@@ -80,13 +84,17 @@ public class SyntaxParser {
 
     private void processOpenBracket(RowToken curr) {
         RowToken token = prev();
-        if (prev() != null && token.is(TokenType.Function)) {
+        if (isOpenFunctionBracket(token)) {
             bracketsContext.addOpenFunctionBracket(curr);
             addSyntaxToken(curr, SyntaxTokenType.OpenFunctionBracket);
         } else {
             bracketsContext.addOpenPrecedenceBracket(curr);
             addSyntaxToken(curr, SyntaxTokenType.OpenPrecedenceBracket);
         }
+    }
+
+    private boolean isOpenFunctionBracket(RowToken token) {
+        return prev() != null && token.is(TokenType.Function);
     }
 
     private RowToken prev() {

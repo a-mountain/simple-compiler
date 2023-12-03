@@ -10,9 +10,10 @@ import maksym.perevalov.parser.Tokenizer;
 public class MathApplication {
 
     public static void main(String[] args) {
+        // a(), -1
         var application = new MathApplication();
-        var context = new MathContext(List.of("sin", "cos", "min", "max"));
-        application.run("(1 - 1) * max(-1, 1)", context);
+        var context = new MathContext(List.of("f", "send", "A"));
+        application.run("12.1 + (2 * x^2-5 * x+7)-(0-i)+ (j+1)/(0 - t)-(-f(1, 7-x, 5))/q + send((2 * x+7)/A(j, i), 127.0 + 0.1 ) + 1 - (f())", context);
     }
 
     public void run(String input, MathContext context) {
