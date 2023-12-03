@@ -1,6 +1,5 @@
 package maksym.perevalov;
 
-import static maksym.perevalov.InfixToPostfixTransformer.*;
 import static maksym.perevalov.parser.SyntaxParser.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -97,7 +96,7 @@ class InfixToPostfixTransformerTest {
 
     List<String> transform(List<SyntaxToken> elements) {
         var transformer = new InfixToPostfixTransformer();
-        return transformer.transform(elements).stream().map(PostfixElement::toString).toList();
+        return transformer.transform(elements).stream().map(MathElement::value).toList();
     }
 
     List<String> expected(String expected) {

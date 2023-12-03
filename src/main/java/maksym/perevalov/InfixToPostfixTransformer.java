@@ -21,11 +21,11 @@ public class InfixToPostfixTransformer {
           ")", 0
     );
 
-    private final List<PostfixElement> postfix = new ArrayList<>();
+    private final List<MathElement> postfix = new ArrayList<>();
     private final Deque<Operator> operations = new ArrayDeque<>();
     private int bonus = 0;
 
-    public List<PostfixElement> transform(List<SyntaxToken> tokens) {
+    public List<MathElement> transform(List<SyntaxToken> tokens) {
         for (var token : tokens) {
             if (token.is(SyntaxTokenType.Number) || token.is(SyntaxTokenType.Variable)) {
                 addToPostfixExpression(token);
@@ -108,53 +108,30 @@ public class InfixToPostfixTransformer {
 
     private void addToPostfixExpression(SyntaxToken token) {
         if (token.is(SyntaxTokenType.Function)) {
-            postfix.add(new PostfixElement.Function(token.value()));
+            postfix.add(new MathElement.Function(token.value()));
         } else if (token.is(SyntaxTokenType.Number)) {
-            postfix.add(new PostfixElement.Number(token.value()));
+            postfix.add(new MathElement.MNumber(token.value()));
         } else if (token.is(SyntaxTokenType.Variable)) {
-            postfix.add(new PostfixElement.Variable(token.value()));
+            postfix.add(new MathElement.Varaible(token.value()));
         } else {
             throw new RuntimeException("Unexpected token - " + token);
         }
     }
 
     private void addToPostfixExpression(Operator operator) {
-        postfix.add(new PostfixElement.Operator(operator.value()));
+        var element = switch (operator.value()) {
+            case "+" -> new MathElement.Plus();
+            case "-" -> new MathElement.Minus();
+            case "/" -> new MathElement.Divide();
+            case "*" -> new MathElement.Multiply();
+            default -> null;
+        };
+        postfix.add(element);
     }
 
     record Operator(String value, int precedence) {
         public boolean isBracket() {
             return value.equals("(") || value.equals(")");
-        }
-    }
-
-    public sealed interface PostfixElement {
-        record Operator(String value) implements PostfixElement {
-            @Override
-            public String toString() {
-                return value;
-            }
-        }
-
-        record Function(String value) implements PostfixElement {
-            @Override
-            public String toString() {
-                return value;
-            }
-        }
-
-        record Number(String value) implements PostfixElement {
-            @Override
-            public String toString() {
-                return value;
-            }
-        }
-
-        record Variable(String value) implements PostfixElement {
-            @Override
-            public String toString() {
-                return value;
-            }
         }
     }
 }

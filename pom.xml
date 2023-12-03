@@ -29,6 +29,12 @@
             <version>5.8.2</version>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>hu.webarticum</groupId>
+            <artifactId>tree-printer</artifactId>
+            <version>3.1.0</version>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
