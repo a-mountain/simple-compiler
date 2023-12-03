@@ -73,10 +73,6 @@ public class InfixToPostfixTransformer {
         return postfix;
     }
 
-    private PostfixElement toPostfix(String string) {
-        return null;
-    }
-
     private int getPrecedence(SyntaxToken token) {
         if (token.is(SyntaxTokenType.Function)) return 3 + bonus;
         return PRECEDENCE.get(token.value()) + bonus;
