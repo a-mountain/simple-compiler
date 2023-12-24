@@ -11,6 +11,11 @@ import maksym.perevalov.parser.BracketsContext;
 import maksym.perevalov.parser.ErrorCollector;
 import maksym.perevalov.parser.SyntaxParser;
 import maksym.perevalov.parser.Tokenizer;
+import maksym.perevalov.tree.InfixToPostfixTransformer;
+import maksym.perevalov.tree.MathContext;
+import maksym.perevalov.tree.TreeBuilder;
+import maksym.perevalov.tree.TreeNode;
+import maksym.perevalov.tree.TreeOptimizer;
 
 class TreeOptimizerTest {
 

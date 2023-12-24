@@ -1,8 +1,7 @@
-package maksym.perevalov;
+package maksym.perevalov.tree;
 
-import static maksym.perevalov.MathElement.*;
+import static maksym.perevalov.tree.MathElement.*;
 
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 

@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import maksym.perevalov.MathContext;
+import maksym.perevalov.tree.MathContext;
 import maksym.perevalov.parser.ParserError.UnknownTokenError;
 
 public class Tokenizer {

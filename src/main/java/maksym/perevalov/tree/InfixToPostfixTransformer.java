@@ -1,4 +1,4 @@
-package maksym.perevalov;
+package maksym.perevalov.tree;
 
 import static maksym.perevalov.parser.SyntaxParser.*;
 

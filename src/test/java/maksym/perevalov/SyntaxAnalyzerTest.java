@@ -12,6 +12,7 @@ import maksym.perevalov.parser.ErrorCollector;
 import maksym.perevalov.parser.SyntaxParser;
 import maksym.perevalov.parser.BracketsContext;
 import maksym.perevalov.parser.Tokenizer;
+import maksym.perevalov.tree.MathContext;
 
 class SyntaxAnalyzerTest {
 

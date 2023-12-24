@@ -10,6 +10,7 @@ import maksym.perevalov.parser.ErrorCollector;
 import maksym.perevalov.parser.Tokenizer;
 import maksym.perevalov.parser.Tokenizer.RowToken;
 import maksym.perevalov.parser.Tokenizer.TokenType;
+import maksym.perevalov.tree.MathContext;
 
 class TokenizerTest {
 

@@ -1,4 +1,4 @@
-package maksym.perevalov;
+package maksym.perevalov.tree;
 
 import hu.webarticum.treeprinter.SimpleTreeNode;
 import hu.webarticum.treeprinter.printer.traditional.TraditionalTreePrinter;

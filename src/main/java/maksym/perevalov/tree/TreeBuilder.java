@@ -1,4 +1,4 @@
-package maksym.perevalov;
+package maksym.perevalov.tree;
 
 import java.util.ArrayDeque;
 import java.util.Deque;

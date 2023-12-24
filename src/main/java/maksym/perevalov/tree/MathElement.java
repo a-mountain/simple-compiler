@@ -1,4 +1,4 @@
-package maksym.perevalov;
+package maksym.perevalov.tree;
 
 public sealed interface MathElement {
 
