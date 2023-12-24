@@ -12,7 +12,7 @@ public class Model {
 
         int tick = 0;
         printHeaders();
-        while (tick <= 10) {
+        while (!memory.isEmpty()) {
             var states = layers.stream()
                   .map(Layer::toString)
                   .toList();
@@ -20,8 +20,17 @@ public class Model {
             for (Layer layer : layers) {
                 layer.tick();
             }
+            while (layers.stream().map(Layer::state).anyMatch(s -> s.equals(State.Holding))) {
+                for (Layer layer : layers) {
+                    layer.move();
+                }
+            }
             tick++;
         }
+        var states = layers.stream()
+              .map(Layer::toString)
+              .toList();
+        print(tick, states);
     }
 
     public interface Layer {
@@ -34,20 +43,25 @@ public class Model {
 
         void tick();
 
+        void move();
+
         List<Layer> collectLayers();
+
+        State state();
     }
 
 
     public static class InputLayer implements Layer {
         private final Memory memory;
         private final Layer nextLayer;
-        private State state = State.Reading;
+        private State state = State.Holding;
         private Instruction instruction;
         private int instructionLength;
 
         public InputLayer(Memory memory, Layer nextLayer) {
             this.memory = memory;
             this.nextLayer = nextLayer;
+            this.instruction = memory.read();
         }
 
         @Override
@@ -61,10 +75,21 @@ public class Model {
                 case Holding -> {
                     instructionLength = Math.max(instructionLength, instruction.complexity);
                     var isTransmitted = nextLayer.transmit(instruction);
-                    if (isTransmitted) nextLayer.setInstructionLength(instructionLength);
+                    if (isTransmitted) {
+                        nextLayer.setInstructionLength(instructionLength);
+                        instruction = null;
+                    }
                     yield isTransmitted ? State.Reading : State.Holding;
                 }
+                default -> throw new RuntimeException("not possible");
             };
+        }
+
+        @Override
+        public void move() {
+            if (state == State.Holding) {
+                tick();
+            }
         }
 
         @Override
@@ -78,13 +103,14 @@ public class Model {
                 case Reading -> "R";
                 case Empty -> "E";
                 case Holding -> "H(%s)".formatted(instruction.toString());
+                default -> throw new RuntimeException("not possible");
             };
         }
 
-        private enum State {
-            Reading, Holding, Empty
+        @Override
+        public State state() {
+            return state;
         }
-
     }
 
     static class ComputationLayer implements Layer {
@@ -117,6 +143,7 @@ public class Model {
                 case Empty -> instruction == null ? State.Empty : State.Computing;
                 case Holding -> {
                     var isTransmitted = nextLayer.transmit(instruction);
+                    if (isTransmitted) instruction = null;
                     yield isTransmitted ? State.Empty : State.Holding;
                 }
                 case Computing -> {
@@ -125,7 +152,15 @@ public class Model {
                     if (nextState == State.Holding) currentProgress = 0;
                     yield nextState;
                 }
+                default -> throw new RuntimeException("not possible");
             };
+        }
+
+        @Override
+        public void move() {
+            if (state == State.Holding || state == State.Empty) {
+                tick();
+            }
         }
 
         @Override
@@ -139,11 +174,13 @@ public class Model {
                 case Empty -> "E";
                 case Computing -> "C(%s)".formatted(instruction.toString());
                 case Holding -> "H(%s)".formatted(instruction.toString());
+                default -> throw new RuntimeException("not possible");
             };
         }
 
-        private enum State {
-            Empty, Holding, Computing,
+        @Override
+        public State state() {
+            return state;
         }
     }
 
@@ -172,7 +209,15 @@ public class Model {
                     instruction = null;
                     yield State.Empty;
                 }
+                default -> throw new RuntimeException("not possible");
             };
+        }
+
+        @Override
+        public void move() {
+            if (state == State.Empty) {
+                tick();
+            }
         }
 
         @Override
@@ -185,15 +230,23 @@ public class Model {
             return switch (state) {
                 case Empty -> "E";
                 case Writing -> "W(%s)".formatted(instruction.toString());
+                default -> throw new RuntimeException("not possible");
             };
         }
 
-        private enum State {
-            Empty,
-            Writing
+        @Override
+        public State state() {
+            return state;
         }
     }
 
+    public enum State {
+        Empty,
+        Writing,
+        Computing,
+        Reading,
+        Holding
+    }
 
     private static void printHeaders() {
         System.out.println("E - Empty, H - holding, W - writing, R - reading, C - computing");
