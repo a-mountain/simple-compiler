@@ -6,7 +6,13 @@ import java.util.stream.Stream;
 public class Model {
 
     public static void main(String[] args) {
-        var memory = new Memory(List.of(new Instruction(1, 1), new Instruction(2, 1)));
+        var memory = new Memory(List.of(
+              new Instruction(3, 6),
+              new Instruction(5, 6),
+              new Instruction(2, 4),
+              new Instruction(4, 4),
+              new Instruction(1, 1)
+        ));
         var inputLayer = new InputLayer(memory, new ComputationLayer(new ComputationLayer(new OutputLayer(memory))));
         var layers = inputLayer.collectLayers();
 
@@ -20,10 +26,12 @@ public class Model {
             for (Layer layer : layers) {
                 layer.tick();
             }
-            while (layers.stream().map(Layer::state).anyMatch(s -> s.equals(State.Holding))) {
+            int i = 0;
+            while (layers.stream().map(Layer::state).anyMatch(s -> s.equals(State.Holding)) && i <= 50) {
                 for (Layer layer : layers) {
                     layer.move();
                 }
+                i++;
             }
             tick++;
         }
