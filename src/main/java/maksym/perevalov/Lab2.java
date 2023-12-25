@@ -45,7 +45,7 @@ public class Lab2 {
               Map.entry("j", 11.0)
         )
         );
-        app.run("10-9-8-7-6-5-4-3-2-1", context, true, true, true);
+        app.run("(sin(x) / a) + (sin(y) / b)", context, true, true, true);
     }
 
     public void run(String input, MathContext context, boolean optimize, boolean showSimple, boolean showOptimized) {
@@ -66,13 +66,13 @@ public class Lab2 {
             System.out.println("---Errors---");
             errorCollector.report().forEach(System.out::println);
         } else {
-//            System.out.println("---Syntax tokens---");
-//            syntaxTokens.forEach(System.out::println);
+            System.out.println("---Syntax tokens---");
+            syntaxTokens.forEach(System.out::println);
         }
         var transformer = new InfixToPostfixTransformer();
         var postfix = transformer.transform(syntaxTokens);
-//        System.out.println("---Postfix---");
-//        postfix.forEach(System.out::println);
+        System.out.println("---Postfix---");
+        postfix.forEach(System.out::println);
         var treeBuilder = new TreeBuilder();
         var tree = treeBuilder.buildTree(postfix);
         var optimizer = new TreeOptimizer(treeBuilder.buildTree(postfix));

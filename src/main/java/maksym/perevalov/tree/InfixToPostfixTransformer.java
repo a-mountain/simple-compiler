@@ -124,7 +124,7 @@ public class InfixToPostfixTransformer {
             case "-" -> new MathElement.Minus();
             case "/" -> new MathElement.Divide();
             case "*" -> new MathElement.Multiply();
-            default -> null;
+            default -> new MathElement.Function(operator.value());
         };
         postfix.add(element);
     }

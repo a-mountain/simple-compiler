@@ -13,7 +13,8 @@ public class Display {
     }
 
     private static SimpleTreeNode toViewableTreeNode(TreeNode node) {
-        var viewableNode = new SimpleTreeNode(ConsoleText.of(node.value().value()).format(AnsiFormat.GREEN.compose(AnsiFormat.BOLD)));
+        var value = node.value() == null ? "nil" : node.value().value();
+        var viewableNode = new SimpleTreeNode(ConsoleText.of(value).format(AnsiFormat.GREEN.compose(AnsiFormat.BOLD)));
         if (node.left() != null)
             viewableNode.addChild(toViewableTreeNode(node.left()));
         if (node.right() != null)
