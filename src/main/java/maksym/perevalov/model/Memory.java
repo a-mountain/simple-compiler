@@ -6,12 +6,11 @@ import java.util.Queue;
 
 public class Memory {
     private final Queue<Instruction> storage;
-    private final int initialSize;
-    private int writes = 0;
+    private int size;
+    private int writes;
 
-    public Memory(List<Instruction> storage) {
-        this.storage = new LinkedList<>(storage);
-        this.initialSize = storage.size();
+    public Memory() {
+        this.storage = new LinkedList<>();
     }
 
     public Instruction read() {
@@ -23,7 +22,12 @@ public class Memory {
     }
 
     public boolean isEmpty() {
-        return writes == initialSize;
+        return writes == size;
     }
 
+    public void load(List<Instruction> instructions) {
+        storage.addAll(instructions);
+        size = storage.size();
+        writes = 0;
+    }
 }

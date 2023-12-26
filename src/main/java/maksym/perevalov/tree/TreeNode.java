@@ -194,6 +194,16 @@ public class TreeNode {
         return value.value();
     }
 
+    public String toExpressionString() {
+        return switch (value) {
+            case MathElement.Function operator ->
+                  "%s(%s, %s)".formatted(operator.value(), left().toExpressionString(), right().toExpressionString());
+            case MathElement.Operator operator ->
+                  "%s %s %s".formatted(left().toExpressionString(), operator.value(), right().toExpressionString());
+            case MathElement.Value v -> v.value();
+        };
+    }
+
     public void setNotCompleted(TreeNode notCompleted) {
         this.notCompleted = notCompleted;
     }

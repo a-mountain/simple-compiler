@@ -1,23 +1,30 @@
 package maksym.perevalov.model;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
-public class Model {
+public class Processor {
+    private final Memory memory;
+    private final List<Layer> layers;
+    int tick = 0;
 
-    public static void main(String[] args) {
-        var memory = new Memory(List.of(
-              new Instruction(3, 6),
-              new Instruction(5, 6),
-              new Instruction(2, 4),
-              new Instruction(4, 4),
-              new Instruction(1, 1)
-        ));
-        var inputLayer = new InputLayer(memory, new ComputationLayer(new ComputationLayer(new OutputLayer(memory))));
-        var layers = inputLayer.collectLayers();
-
-        int tick = 0;
+    public Processor() {
+        this.memory = new Memory();
+        InputLayer layer = new InputLayer(memory, new ComputationLayer(new ComputationLayer(new ComputationLayer(new ComputationLayer(new OutputLayer(memory))))));
+        this.layers = layer.collectLayers();
         printHeaders();
+    }
+
+    public void run(List<Instruction> instructions) {
+        int length = instructions.stream()
+              .map(i -> i.complexity)
+              .max(Integer::compareTo)
+              .get();
+        for (Layer layer : layers) {
+            layer.setInstructionLength(length);
+        }
+        memory.load(instructions);
         while (!memory.isEmpty()) {
             var states = layers.stream()
                   .map(Layer::toString)
@@ -35,10 +42,11 @@ public class Model {
             }
             tick++;
         }
-        var states = layers.stream()
-              .map(Layer::toString)
-              .toList();
-        print(tick, states);
+        tick--;
+    }
+
+    public int getCurrentTick() {
+        return tick;
     }
 
     public interface Layer {
@@ -62,29 +70,24 @@ public class Model {
     public static class InputLayer implements Layer {
         private final Memory memory;
         private final Layer nextLayer;
-        private State state = State.Holding;
+        private State state = State.Reading;
         private Instruction instruction;
-        private int instructionLength;
 
         public InputLayer(Memory memory, Layer nextLayer) {
             this.memory = memory;
             this.nextLayer = nextLayer;
-            this.instruction = memory.read();
         }
 
         @Override
         public void tick() {
             state = switch (state) {
-                case Empty -> State.Empty;
                 case Reading -> {
                     instruction = memory.read();
-                    yield instruction == null ? State.Empty : State.Holding;
+                    yield instruction == null ? State.Reading : State.Holding;
                 }
                 case Holding -> {
-                    instructionLength = Math.max(instructionLength, instruction.complexity);
                     var isTransmitted = nextLayer.transmit(instruction);
                     if (isTransmitted) {
-                        nextLayer.setInstructionLength(instructionLength);
                         instruction = null;
                     }
                     yield isTransmitted ? State.Reading : State.Holding;
@@ -135,7 +138,6 @@ public class Model {
         @Override
         public void setInstructionLength(int length) {
             instructionLength = length;
-            nextLayer.setInstructionLength(length);
         }
 
         @Override
@@ -257,12 +259,13 @@ public class Model {
     }
 
     private static void printHeaders() {
+        System.out.println("### Computation process");
         System.out.println("E - Empty, H - holding, W - writing, R - reading, C - computing");
-        System.out.printf("%-5s %-4s %-4s %-4s %-4s%n", "Tick", "R", "L1", "L2", "W");
+        System.out.printf("%-5s %-4s %-4s %-4s %-4s %-4s %-4s%n", "Tick", "R", "L1", "L2", "L3", "L4", "W");
         System.out.println("----------------------");
     }
 
     private static void print(int tick, List<?> layer) {
-        System.out.printf("%-5s %-4s %-4s %-4s %-4s%n", tick, layer.get(0), layer.get(1), layer.get(2), layer.get(3));
+        System.out.printf("%-5s %-4s %-4s %-4s %-4s %-4s %-4s%n", tick, layer.get(0), layer.get(1), layer.get(2), layer.get(3), layer.get(4), layer.get(5));
     }
 }
