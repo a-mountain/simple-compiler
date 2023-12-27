@@ -45,7 +45,7 @@ public class Lab2 {
               Map.entry("j", 11.0)
         )
         );
-        app.run("(sin(x) / a) + (sin(y) / b)", context, true, true, true);
+        app.run("a+(b+c+d+(e+f)+g)+h", context, true, true, true);
     }
 
     public void run(String input, MathContext context, boolean optimize, boolean showSimple, boolean showOptimized) {

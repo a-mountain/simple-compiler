@@ -17,12 +17,20 @@ public sealed interface MathElement {
         public String toString() {
             return value;
         }
+
+        boolean isNegative() {
+            return value.startsWith("-");
+        }
     }
 
     record Varaible(String value) implements MathElement, Value {
         @Override
         public String toString() {
             return value;
+        }
+
+        boolean isNegative() {
+            return value.startsWith("-");
         }
     }
 
@@ -31,12 +39,21 @@ public sealed interface MathElement {
         public String value() {
             return "+";
         }
+
+        @Override
+        public String toString() {
+            return value();
+        }
     }
 
     record Minus() implements Operator {
         @Override
         public String value() {
             return "-";
+        }
+        @Override
+        public String toString() {
+            return value();
         }
     }
 
@@ -45,6 +62,10 @@ public sealed interface MathElement {
         public String value() {
             return "/";
         }
+        @Override
+        public String toString() {
+            return value();
+        }
     }
 
     record Multiply() implements Operator {
@@ -52,9 +73,17 @@ public sealed interface MathElement {
         public String value() {
             return "*";
         }
+        @Override
+        public String toString() {
+            return value();
+        }
     }
 
     record Function(String value) implements Operator {
+        @Override
+        public String toString() {
+            return value();
+        }
     }
 
     sealed interface Value extends MathElement {

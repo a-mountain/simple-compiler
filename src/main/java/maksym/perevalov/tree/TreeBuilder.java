@@ -9,6 +9,10 @@ public class TreeBuilder {
     public TreeNode buildTree(List<MathElement> postfix) {
         Deque<TreeNode> stack = new ArrayDeque<>();
         for (MathElement element : postfix) {
+            if (element.value().equals("(")) {
+                stack.peekFirst().setBrackets(true);
+                continue;
+            }
             if (element instanceof MathElement.Operator) {
                 var right = stack.pop();
                 var left = stack.pop();

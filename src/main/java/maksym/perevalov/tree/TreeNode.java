@@ -7,6 +7,7 @@ public class TreeNode {
     private MathElement value;
     private TreeNode left, right;
     private TreeNode notCompleted;
+    private boolean isBrackets;
 
     public TreeNode(MathElement value, TreeNode left, TreeNode right) {
         this.value = value;
@@ -79,7 +80,7 @@ public class TreeNode {
     public Result collectPluses() {
         var leafs = new ArrayList<TreeNode>();
         int total = collectPluses(leafs, this);
-        return new Result(leafs, total);
+        return new Result(leafs, total, this.isBrackets);
     }
 
     private int collectPluses(List<TreeNode> leafs, TreeNode node) {
@@ -94,7 +95,7 @@ public class TreeNode {
     public Result collectMultiplications() {
         var leafs = new ArrayList<TreeNode>();
         int total = collectMultiplications(leafs, this);
-        return new Result(leafs, total);
+        return new Result(leafs, total, this.isBrackets);
     }
 
     private static int collectMultiplications(List<TreeNode> leafs, TreeNode node) {
@@ -195,20 +196,29 @@ public class TreeNode {
     }
 
     public String toExpressionString() {
-        return switch (value) {
+        var s = switch (value) {
             case MathElement.Function operator ->
                   "%s(%s, %s)".formatted(operator.value(), left().toExpressionString(), right().toExpressionString());
             case MathElement.Operator operator ->
                   "%s %s %s".formatted(left().toExpressionString(), operator.value(), right().toExpressionString());
             case MathElement.Value v -> v.value();
         };
+        return isBrackets ? "(" + s + ")" : s;
     }
 
     public void setNotCompleted(TreeNode notCompleted) {
         this.notCompleted = notCompleted;
     }
 
-    record Result(List<TreeNode> leafs, int total) {
+    public boolean isBrackets() {
+        return isBrackets;
+    }
+
+    public void setBrackets(boolean brackets) {
+        isBrackets = brackets;
+    }
+
+    public record Result(List<TreeNode> leafs, int total, boolean brackets) {
 
     }
 }

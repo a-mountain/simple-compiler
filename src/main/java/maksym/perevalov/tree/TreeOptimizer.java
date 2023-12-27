@@ -15,13 +15,16 @@ public class TreeOptimizer {
     public TreeNode optimize() {
 //        this.root = foldNumbers(this.root);
 //        this.root = optimizeZeroExpressions(this.root);
-//        this.root = optimizeOneExpressions(this.root);
-        transformSubtractionToAddition(root);
-        transformDivisionToMultiplication(this.root);
+        this.root = optimizeOneExpressions(this.root);
+//        transformSubtractionToAddition(root);
+//        transformDivisionToMultiplication(this.root);
+        optimizeWhenRightIsNegativeInAddition(this.root);
         this.root = balanceAdditions(this.root);
         this.root = balanceMultiplications(this.root);
+        optimizeWhenRightIsNegativeInAddition(this.root);
+
 //        this.root = optimizeZeroExpressions(this.root);
-//        this.root = optimizeOneExpressions(this.root);
+        this.root = optimizeOneExpressions(this.root);
 //        this.root = foldNumbers(this.root);
         return root;
     }
@@ -37,73 +40,90 @@ public class TreeOptimizer {
         return node;
     }
 
-//    private TreeNode optimizeZeroExpressions(TreeNode node) {
-//        if (node == null) return null;
-//        node.setLeft(optimizeZeroExpressions(node.left()));
-//        node.setRight(optimizeZeroExpressions(node.right()));
-//        switch (node.value()) {
-//            case Multiply _ -> {
-//                if (isZero(node.left()) || isZero(node.right())) {
-//                    return new TreeNode(MNumber.zero());
-//                }
-//            }
-//            case Divide _ -> {
-//                if (isZero(node.left())) {
-//                    return new TreeNode(MNumber.zero());
-//                }
-//            }
-//            case Minus _ -> {
-//                if (isZero(node.left())) {
-//                    negate(node.right());
-//                    return node.right();
-//                }
-//                if (isZero(node.right())) return node.left();
-//            }
-//            case Plus _ -> {
-//                if (isZero(node.left())) return node.right();
-//                if (isZero(node.right())) return node.left();
-//            }
-//            default -> {
-//            }
-//        }
-//        return node;
-//    }
+    private void optimizeWhenRightIsNegativeInAddition(TreeNode node) {
+        if (node == null) return;
+        optimizeWhenRightIsNegativeInAddition(node.left());
+        optimizeWhenRightIsNegativeInAddition(node.right());
+        if (node.value() instanceof MathElement.Plus) {
+            if (node.right().value() instanceof MathElement.MNumber n && n.isNegative()) {
+                node.setValue(new Minus());
+                negate(node.right());
+            }
+
+            if (node.right().value() instanceof MathElement.Varaible n && n.isNegative()) {
+                node.setValue(new Minus());
+                negate(node.right());
+            }
+        }
+    }
+
+    private TreeNode optimizeZeroExpressions(TreeNode node) {
+        if (node == null) return null;
+        node.setLeft(optimizeZeroExpressions(node.left()));
+        node.setRight(optimizeZeroExpressions(node.right()));
+        switch (node.value()) {
+            case Multiply _ -> {
+                if (isZero(node.left()) || isZero(node.right())) {
+                    return new TreeNode(MNumber.zero());
+                }
+            }
+            case Divide _ -> {
+                if (isZero(node.left())) {
+                    return new TreeNode(MNumber.zero());
+                }
+            }
+            case Minus _ -> {
+                if (isZero(node.left())) {
+                    negate(node.right());
+                    return node.right();
+                }
+                if (isZero(node.right())) return node.left();
+            }
+            case Plus _ -> {
+                if (isZero(node.left())) return node.right();
+                if (isZero(node.right())) return node.left();
+            }
+            default -> {
+            }
+        }
+        return node;
+    }
 
     public static boolean isNumber(TreeNode node) {
         if (node == null) return false;
         return node.value() instanceof MNumber;
     }
 
-//    private TreeNode optimizeOneExpressions(TreeNode node) {
-//        if (node == null) return null;
-//        node.setLeft(optimizeOneExpressions(node.left()));
-//        node.setRight(optimizeOneExpressions(node.right()));
-//        switch (node.value()) {
-//            case Multiply _ -> {
-//                if (isPositiveOne(node.left())) return node.right();
-//                if (isNegativeOne(node.left())) {
-//                    negate(node.right());
-//                    return node.right();
-//                }
-//
-//                if (isPositiveOne(node.right())) return node.left();
-//                if (isNegativeOne(node.right())) {
-//                    negate(node.left());
-//                    return node.left();
-//                }
-//            }
-//            case Divide _ -> {
-//                if (isPositiveOne(node.right())) return node.left();
-//                if (isNegativeOne(node.right())) {
-//                    negate(node.left());
-//                    return node.left();
-//                }
-//            }
-//            default -> {
-//            }
-//        }
-//        return node;
-//    }
+    private TreeNode optimizeOneExpressions(TreeNode node) {
+        if (node == null) return null;
+        node.setLeft(optimizeOneExpressions(node.left()));
+        node.setRight(optimizeOneExpressions(node.right()));
+        switch (node.value()) {
+            case Multiply _ -> {
+                if (isPositiveOne(node.left())) return node.right();
+                if (isNegativeOne(node.left())) {
+                    negate(node.right());
+                    return node.right();
+                }
+
+                if (isPositiveOne(node.right())) return node.left();
+                if (isNegativeOne(node.right())) {
+                    negate(node.left());
+                    return node.left();
+                }
+            }
+            case Divide _ -> {
+                if (isPositiveOne(node.right())) return node.left();
+                if (isNegativeOne(node.right())) {
+                    negate(node.left());
+                    return node.left();
+                }
+            }
+            default -> {
+            }
+        }
+        return node;
+    }
 
     public boolean isZero(TreeNode node) {
         if (node == null) return false;
@@ -137,6 +157,7 @@ public class TreeOptimizer {
         }
         var result = node.collectPluses();
         var root = new TreeNode(new Plus(), null, null);
+        root.setBrackets(result.brackets());
         for (int i = 1; i < result.total(); i++) {
             root.insert(new TreeNode(new Plus(), null, null));
         }
@@ -156,6 +177,7 @@ public class TreeOptimizer {
         }
         var result = node.collectMultiplications();
         var root = new TreeNode(new Multiply(), null, null);
+        root.setBrackets(result.brackets());
         for (int i = 1; i < result.total(); i++) {
             root.insert(new TreeNode(new Multiply(), null, null));
         }

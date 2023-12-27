@@ -13,7 +13,7 @@ import maksym.perevalov.tree.TreeBuilder;
 import maksym.perevalov.tree.TreeNode;
 import maksym.perevalov.tree.TreeOptimizer;
 
-public class App {
+public class Model {
 
     public static void main(String[] args) {
         var context = new MathContext(List.of("fn"));
@@ -23,7 +23,7 @@ public class App {
               Map.entry("*", 4),
               Map.entry("/", 8)
         );
-        var expression = expression("a-b*(k-t+(f-g)*(f*5.9-q)+(w-y*(m-1))/p)-(x-3)*(x+3)/(d+q-w)", context);
+        var expression = expression("a-b*(k-t+(f-g)", context);
         var instructionBuilder = new InstructionBuilder(complexity);
         var instructions = instructionBuilder.buildInstructions(expression);
         int sequentialSpeed = sequentialComplexity(instructions);

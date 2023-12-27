@@ -61,7 +61,7 @@ public class InfixToPostfixTransformer {
                 while (latestSavedOperatorIsNotOpenBracket()) {
                     addToPostfixExpression(takeSavedLatestOperator());
                 }
-                takeSavedLatestOperator();
+               addToPostfixExpression(takeSavedLatestOperator());
             }
 
         }
