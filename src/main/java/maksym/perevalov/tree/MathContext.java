@@ -25,8 +25,8 @@ public class MathContext {
     public Double readVariable(String variable) {
         if (variable.charAt(0) == '-') {
             var value = variable.substring(1);
-            return -1 * variables.get(value);
+            return -1 * variables.getOrDefault(value, 0.0);
         }
-        return variables.get(variable);
+        return variables.getOrDefault(variable, 0.0);
     }
 }

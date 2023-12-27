@@ -11,6 +11,7 @@ import maksym.perevalov.parser.BracketsContext;
 import maksym.perevalov.parser.ErrorCollector;
 import maksym.perevalov.parser.SyntaxParser;
 import maksym.perevalov.parser.Tokenizer;
+import maksym.perevalov.tree.Display;
 import maksym.perevalov.tree.InfixToPostfixTransformer;
 import maksym.perevalov.tree.MathContext;
 import maksym.perevalov.tree.TreeBuilder;
@@ -21,42 +22,42 @@ class TreeOptimizerTest {
 
     @Test
     void test1() {
-        String expression = "1+2+3+4+5+6+7+8";
+        String expression = "a+b+c+d+e+f+g+d";
         assertEquals(result(expression), optimizedResult(expression));
         assertEquals(4, optimizedHeight(expression));
     }
 
     @Test
     void test2() {
-        String expression = "1+2+3+4+5+6+7+8+(8+9+10+11+12+13+14+15)/(16+17+18+19+20+21+22+23)";
+        String expression = "a+b+c+d+e+f+g+d+(a+b+c+d+e+f+g+d)/(a+b+c+d+e+f+g+d)";
         assertEquals(result(expression), optimizedResult(expression));
         assertEquals(8, optimizedHeight(expression));
     }
 
     @Test
     void test3() {
-        String expression = "1-2-3-4-5-6-7-8";
+        String expression = "a-b-c-d-e-f-g-d";
         assertEquals(result(expression), optimizedResult(expression));
         assertEquals(4, optimizedHeight(expression));
     }
 
     @Test
     void test4() {
-        String expression = "1+(2+3+4+(5+6)+7)+8";
+        String expression = "a+(b+c+d+(e+f)+g)+e";
         assertEquals(result(expression), optimizedResult(expression));
         assertEquals(4, optimizedHeight(expression));
     }
 
     @Test
     void test5() {
-        String expression = "1-((2-3-4)-(5-6)-7)-8";
+        String expression = "a-((b-c-d)-(e-f)-g)-s";
         assertEquals(result(expression), optimizedResult(expression));
         assertEquals(4, optimizedHeight(expression));
     }
 
     @Test
     void test6() {
-        String expression = "1/2/3/4/5/6/7/8";
+        String expression = "a/b/c/d/e/f/g/d";
         assertEquals(result(expression), optimizedResult(expression), 0.00001);
         assertEquals(5, optimizedHeight(expression));
     }
@@ -65,27 +66,28 @@ class TreeOptimizerTest {
     void test7() {
         String expression = "5040/8/7/6/5/4/3/2";
         assertEquals(0.125, optimizedResult(expression), 0.00001);
-        assertEquals(5, optimizedHeight(expression));
+        assertEquals(1, optimizedHeight(expression));
     }
 
     @Test
     void test8() {
         String expression = "10-9-8-7-6-5-4-3-2-1";
         assertEquals(-35.0, optimizedResult(expression), 0.00001);
-        assertEquals(5, optimizedHeight(expression));
+        assertEquals(1, optimizedHeight(expression));
     }
 
     @Test
     void test9() {
         String expression = "64-(32-16)-8-(4-2-1)";
         assertEquals(39.0, optimizedResult(expression), 0.00001);
-        assertEquals(4, optimizedHeight(expression));
+        assertEquals(1, optimizedHeight(expression));
     }
 
     double optimizedResult(String expression) {
         var mathContext = new MathContext(List.of());
         var optimizer = new TreeOptimizer(buildTree(expression));
         var optimized = optimizer.optimize();
+        Display.displayTree(optimized);
         return optimized.compute(mathContext);
     }
 

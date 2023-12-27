@@ -13,19 +13,19 @@ public class TreeOptimizer {
     }
 
     public TreeNode optimize() {
-//        this.root = foldNumbers(this.root);
-//        this.root = optimizeZeroExpressions(this.root);
+        this.root = foldNumbers(this.root);
+        this.root = optimizeZeroExpressions(this.root);
         this.root = optimizeOneExpressions(this.root);
-//        transformSubtractionToAddition(root);
-//        transformDivisionToMultiplication(this.root);
-        optimizeWhenRightIsNegativeInAddition(this.root);
+        transformSubtractionToAddition(root);
+        transformDivisionToMultiplication(this.root);
         this.root = balanceAdditions(this.root);
+        optimizeWhenRightIsNegativeInAddition(this.root); // should be after balanceAdditions
         this.root = balanceMultiplications(this.root);
         optimizeWhenRightIsNegativeInAddition(this.root);
 
-//        this.root = optimizeZeroExpressions(this.root);
+        this.root = optimizeZeroExpressions(this.root);
         this.root = optimizeOneExpressions(this.root);
-//        this.root = foldNumbers(this.root);
+        this.root = foldNumbers(this.root);
         return root;
     }
 
