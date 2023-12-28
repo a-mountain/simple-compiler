@@ -8,6 +8,11 @@ import hu.webarticum.treeprinter.text.ConsoleText;
 public class Display {
 
     public static void displayTree(TreeNode node) {
+        displayTree(node, "");
+    }
+
+    public static void displayTree(TreeNode node, String msg) {
+        System.out.println(msg);
         var viewableNode = toViewableTreeNode(node);
         new TraditionalTreePrinter().print(viewableNode);
     }

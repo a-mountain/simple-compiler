@@ -45,7 +45,8 @@ public class Lab2 {
               Map.entry("j", 11.0)
         )
         );
-        app.run("a+(b+c+d+(e+f)+g)+h", context, true, true, true);
+//        "5040/8/7/6/5/4/3/2"
+        app.run("5040/8/7/6/5/4/3/2", context, true, true, true);
     }
 
     public void run(String input, MathContext context, boolean optimize, boolean showSimple, boolean showOptimized) {

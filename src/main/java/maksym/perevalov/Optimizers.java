@@ -27,22 +27,22 @@ public class Optimizers {
         var tree = tree(tokens, true);
         var first = tree.toExpressionString();
         Display.displayTree(tree);
-        traverse(tree);
+//        traverse(tree);
         tree = optimize(tree);
         Display.displayTree(tree);
         System.out.println(first);
         System.out.println(tree.toExpressionString());
     }
 
-    public static void traverse(TreeNode node) {
-        if (node.value() instanceof MathElement.Multiply) {
-
-            if (node.right().isBrackets()) {
-                node.setRight(multiply(node.left(), node.right()));
-            }
-
-        }
-    }
+//    public static void traverse(TreeNode node) {
+//        if (node.value() instanceof MathElement.Multiply) {
+//
+//            if (node.right().isBrackets()) {
+//                node.setRight(multiply(node.left(), node.right()));
+//            }
+//
+//        }
+//    }
 
     public static TreeNode multiply(TreeNode left, TreeNode right) {
         if (left.value() instanceof MathElement.Value) {

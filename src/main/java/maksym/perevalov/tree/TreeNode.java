@@ -4,9 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TreeNode {
-    private MathElement value;
-    private TreeNode left, right;
-    private TreeNode notCompleted;
+    private final MathElement value;
+    private final TreeNode left, right;
     private boolean isBrackets;
 
     public TreeNode(MathElement value, TreeNode left, TreeNode right) {
@@ -17,6 +16,8 @@ public class TreeNode {
 
     public TreeNode(MathElement value) {
         this.value = value;
+        this.left = null;
+        this.right = null;
     }
 
     public static TreeNode ofNumber(Double number) {
@@ -34,47 +35,34 @@ public class TreeNode {
         return hasFree(node.left) || hasFree(node.right);
     }
 
-    public void insert(TreeNode node) {
-        if (notCompleted != null) {
-            if (!notCompleted.hasRight()) {
-                notCompleted.setRight(node);
-            }
-            if (!notCompleted.hasLeft()) {
-                notCompleted.setLeft(node);
-            }
-            notCompleted = null;
-            return;
-        }
-        insert(this, node, this);
+    public TreeNode insert(TreeNode node) {
+        return insert(this, node, this);
     }
 
-    private static void insert(TreeNode current, TreeNode target, TreeNode root) {
+    private static TreeNode insert(TreeNode current, TreeNode target, TreeNode root) {
         if (!current.hasLeft()) {
-            current.left = target;
             if (!current.isCompleted()) {
                 root.setNotCompleted(current);
             }
-            return;
+            return current.withLeft(target);
         }
         if (!current.hasRight()) {
-            current.right = target;
             if (!current.isCompleted()) {
                 root.setNotCompleted(current);
             }
-            return;
+            return current.withRight(target);
         }
         if (hasFree(current.left) && weight(current.left) <= weight(current.right)) {
-            insert(current.left, target, root);
+            return current.withLeft(insert(current.left, target, root));
         } else if (hasFree(current.right) && weight(current.right) < weight(current.left)) {
-            insert(current.right, target, root);
+            return current.withRight(insert(current.right, target, root));
         } else if (hasFree(current.left)) {
-            insert(current.left, target, root);
+            return current.withLeft(insert(current.left, target, root));
         } else if (hasFree(current.right)) {
-            insert(current.right, target, root);
+            return current.withRight(insert(current.right, target, root));
         } else {
             throw new RuntimeException("Can't insert value = " + current);
         }
-
     }
 
     public Result collectPluses() {
@@ -148,9 +136,15 @@ public class TreeNode {
             case MathElement.Minus _ -> compute(node.left(), context) - compute(node.right(), context);
             case MathElement.Multiply _ -> compute(node.left(), context) * compute(node.right(), context);
             case MathElement.Divide _ -> compute(node.left(), context) / compute(node.right(), context);
-            case MathElement.Function function -> 0.0;
+            case MathElement.Function function -> {
+                System.out.println("Compute (function)");
+                yield 0.0;
+            }
             case MathElement.Varaible v -> context.readVariable(v.value());
-            case null -> 0.0;
+            case null -> {
+                System.out.println("Compute (null)");
+                yield 0.0;
+            }
         };
     }
 
@@ -178,18 +172,6 @@ public class TreeNode {
         return right;
     }
 
-    public void setValue(MathElement value) {
-        this.value = value;
-    }
-
-    public void setLeft(TreeNode left) {
-        this.left = left;
-    }
-
-    public void setRight(TreeNode right) {
-        this.right = right;
-    }
-
     @Override
     public String toString() {
         return value.value();
@@ -206,8 +188,19 @@ public class TreeNode {
         return isBrackets ? "(" + s + ")" : s;
     }
 
+    public TreeNode withLeft(TreeNode newLeft) {
+        return new TreeNode(this.value, newLeft, this.right);
+    }
+
+    public TreeNode withRight(TreeNode newRight) {
+        return new TreeNode(this.value, this.left, newRight);
+    }
+
+    public TreeNode withValue(MathElement newValue) {
+        return new TreeNode(newValue, this.left, this.right);
+    }
+
     public void setNotCompleted(TreeNode notCompleted) {
-        this.notCompleted = notCompleted;
     }
 
     public boolean isBrackets() {
@@ -218,7 +211,5 @@ public class TreeNode {
         isBrackets = brackets;
     }
 
-    public record Result(List<TreeNode> leafs, int total, boolean brackets) {
-
-    }
+    public record Result(List<TreeNode> leafs, int total, boolean brackets) { }
 }

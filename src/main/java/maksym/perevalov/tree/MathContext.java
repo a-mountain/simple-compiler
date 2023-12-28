@@ -23,6 +23,9 @@ public class MathContext {
     }
 
     public Double readVariable(String variable) {
+        if (variables.containsKey(variable) && variables.containsKey(variable.substring(1))) {
+            System.out.println(variable + " - var not found");
+        }
         if (variable.charAt(0) == '-') {
             var value = variable.substring(1);
             return -1 * variables.getOrDefault(value, 0.0);
