@@ -156,8 +156,7 @@ public class TreeOptimizer {
                   .withRight(balanceAdditions(node.right()));
         }
         var result = node.collectPluses();
-        var root = new TreeNode(new Plus(), null, null);
-        root.setBrackets(result.brackets());
+        var root = new TreeNode(new Plus(), null, null, result.brackets());
         for (int i = 1; i < result.total(); i++) {
             root = root.insert(new TreeNode(new Plus(), null, null));
         }
@@ -182,8 +181,7 @@ public class TreeOptimizer {
                   .withRight(balanceMultiplications(node.right()));
         }
         var result = node.collectMultiplications();
-        var root = new TreeNode(new Multiply(), null, null);
-        root.setBrackets(result.brackets());
+        var root = new TreeNode(new Multiply(), null, null, result.brackets());
         for (int i = 1; i < result.total(); i++) {
             root = root.insert(new TreeNode(new Multiply(), null, null));
         }

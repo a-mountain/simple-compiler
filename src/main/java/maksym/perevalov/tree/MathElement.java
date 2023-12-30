@@ -44,6 +44,11 @@ public sealed interface MathElement {
         public String toString() {
             return value();
         }
+
+        @Override
+        public boolean isCommutative() {
+            return true;
+        }
     }
 
     record Minus() implements Operator {
@@ -54,6 +59,11 @@ public sealed interface MathElement {
         @Override
         public String toString() {
             return value();
+        }
+
+        @Override
+        public boolean isCommutative() {
+            return false;
         }
     }
 
@@ -66,6 +76,11 @@ public sealed interface MathElement {
         public String toString() {
             return value();
         }
+
+        @Override
+        public boolean isCommutative() {
+            return false;
+        }
     }
 
     record Multiply() implements Operator {
@@ -77,6 +92,11 @@ public sealed interface MathElement {
         public String toString() {
             return value();
         }
+
+        @Override
+        public boolean isCommutative() {
+            return true;
+        }
     }
 
     record Function(String value) implements Operator {
@@ -84,12 +104,17 @@ public sealed interface MathElement {
         public String toString() {
             return value();
         }
+
+        @Override
+        public boolean isCommutative() {
+            return false;
+        }
     }
 
     sealed interface Value extends MathElement {
     }
 
     sealed interface Operator extends MathElement {
-
+        boolean isCommutative();
     }
 }

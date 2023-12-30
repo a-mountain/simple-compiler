@@ -6,18 +6,21 @@ import java.util.List;
 public class TreeNode {
     private final MathElement value;
     private final TreeNode left, right;
-    private boolean isBrackets;
+    private final boolean isBrackets;
+
+    public TreeNode(MathElement value) {
+        this(value, null, null);
+    }
 
     public TreeNode(MathElement value, TreeNode left, TreeNode right) {
+        this(value, left, right, false);
+    }
+
+    public TreeNode(MathElement value, TreeNode left, TreeNode right, boolean isBrackets) {
         this.value = value;
         this.left = left;
         this.right = right;
-    }
-
-    public TreeNode(MathElement value) {
-        this.value = value;
-        this.left = null;
-        this.right = null;
+        this.isBrackets = isBrackets;
     }
 
     public static TreeNode ofNumber(Double number) {
@@ -189,15 +192,19 @@ public class TreeNode {
     }
 
     public TreeNode withLeft(TreeNode newLeft) {
-        return new TreeNode(this.value, newLeft, this.right);
+        return new TreeNode(this.value, newLeft, this.right, this.isBrackets);
     }
 
     public TreeNode withRight(TreeNode newRight) {
-        return new TreeNode(this.value, this.left, newRight);
+        return new TreeNode(this.value, this.left, newRight, this.isBrackets);
     }
 
     public TreeNode withValue(MathElement newValue) {
-        return new TreeNode(newValue, this.left, this.right);
+        return new TreeNode(newValue, this.left, this.right, this.isBrackets);
+    }
+
+    public TreeNode withBrackets(boolean newIsBrackets) {
+        return new TreeNode(this.value, this.left, this.right, newIsBrackets);
     }
 
     public void setNotCompleted(TreeNode notCompleted) {
@@ -205,10 +212,6 @@ public class TreeNode {
 
     public boolean isBrackets() {
         return isBrackets;
-    }
-
-    public void setBrackets(boolean brackets) {
-        isBrackets = brackets;
     }
 
     public record Result(List<TreeNode> leafs, int total, boolean brackets) { }

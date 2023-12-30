@@ -10,7 +10,8 @@ public class TreeBuilder {
         Deque<TreeNode> stack = new ArrayDeque<>();
         for (MathElement element : postfix) {
             if (element.value().equals("(")) {
-                stack.peekFirst().setBrackets(true);
+                var node = stack.pop().withBrackets(true);
+                stack.addFirst(node);
                 continue;
             }
             if (element instanceof MathElement.Operator) {
